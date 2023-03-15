@@ -20,4 +20,7 @@ Note: add description of the data
 
 ## Instruction to trim unrelated elements
 
-
+In order to trim CTGs, execute the following command:
+```
+ python3 Main_Trim_CTG.py --data_file_path="Data/example.csv" --graph_dir="Data/Graph"
+```
