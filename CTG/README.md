@@ -1,4 +1,4 @@
-!pip3 install pickle5# JIT-Vul Dataset for Just-In-Time Vulnerability Detection 
+# JIT-Vul Dataset for Just-In-Time Vulnerability Detection 
 
 This repository provides the code for generating vulnerability-triggering commit dataset. To start, clone the repository and navigate to the root directory.
 
