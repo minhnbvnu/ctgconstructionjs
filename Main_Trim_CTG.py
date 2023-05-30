@@ -7,6 +7,7 @@ from CTG.parse_joern import get_node_edges
 from queue import Queue
 
 from CTG.Joern_Node import NODE
+import multiprocessing as mp
 
 
 def find_root_node(stmt_edges):
@@ -80,11 +81,22 @@ def generate_node_content(nodes):
     nodes["node_content"] = content
     return nodes
 
-
-def trim_CTG(df, idx, separate_token, graph_dir):
-    commit_id = df.at[idx, "commit_id"]
-    sub_graph_nodes = df.at[idx, "nodes"].split(separate_token)
-    sub_graph_edges = df.at[idx, "edges"].split(separate_token)
+#edge_dir + "/edge_{}.csv".format(commit_id)
+def trim_CTG(row, idx, separate_token, graph_dir):
+    commit_id = row["commit_id"]
+    if not os.path.isdir(graph_dir):
+        os.makedirs(graph_dir)
+    node_dir = os.path.join(graph_dir, "node")
+    edge_dir = os.path.join(graph_dir, "edge")
+    if not os.path.isdir(node_dir):
+        os.makedirs(node_dir)
+    if not os.path.isdir(edge_dir):
+        os.makedirs(edge_dir)
+    if os.path.exists(edge_dir + "/edge_{}.csv".format(commit_id)):
+       	print('already trim' + commit_id)
+        return  
+    sub_graph_nodes = row["nodes"].split(separate_token)
+    sub_graph_edges = row["edges"].split(separate_token)
     commit_nodes = []
     commit_edges = []
     for sub_graph_idx in range(0, len(sub_graph_nodes)):
@@ -160,19 +172,10 @@ def trim_CTG(df, idx, separate_token, graph_dir):
     all_nodes = pandas.concat(commit_nodes)
     all_edges = pandas.concat(commit_edges)
 
-    if not os.path.isdir(graph_dir):
-        os.makedirs(graph_dir)
-    node_dir = os.path.join(graph_dir, "node")
-    edge_dir = os.path.join(graph_dir, "edge")
-    if not os.path.isdir(node_dir):
-        os.makedirs(node_dir)
-    if not os.path.isdir(edge_dir):
-        os.makedirs(edge_dir)
-
     all_nodes.to_csv(node_dir + "/node_{}.csv".format(commit_id))
     all_edges.to_csv(edge_dir + "/edge_{}.csv".format(commit_id))
 
-
+pool = mp.Pool(mp.cpu_count())
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_file_path', type=str, help='path of the dataset file', default="Data")
@@ -185,9 +188,13 @@ if __name__ == '__main__':
     separate_token = "=" * 100
     graph_dir = args.graph_dir
     for idx, row in df.iterrows():
-        commit_id = df.at[idx, "commit_id"]
+        commit_id = row["commit_id"]
         try:
             print("trimming graph:" + commit_id)
-            trim_CTG(df, idx, separate_token, graph_dir)
+            #trim_CTG(df, idx, separate_token, graph_dir)
+            pool.apply_async(trim_CTG, args=(row, idx, separate_token, graph_dir))
+
         except:
             print("exception:", commit_id)
+    pool.close()
+    pool.join()
