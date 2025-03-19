@@ -33,7 +33,7 @@ def run_joern(file_path: str, output_dir: str):
     mkdir_if_not_exist(output_dir)
 
     # workspace_name = str(get_current_timestamp()) + "__" + "__".join(file_path.rsplit("___", 1)[1].split("/")[1:])
-    workspace_name = "test"
+    workspace_name = "positive"
 
     params = f"--param filepath={file_path} --param outputDir={output_dir} --param workspaceName={workspace_name}"
     command = f"joern --script {JOERN_SCRIPT_PATH} {params}"
@@ -51,10 +51,10 @@ def run_joern(file_path: str, output_dir: str):
 
 def export_joern_graph():
     input_dir = join_path("/Users/nguyenbinhminh/MasterUET/Thesis/code-smell-classifier/scanner/functions")
-    output_dir = join_path("/Users/nguyenbinhminh/MasterUET/Thesis/code-smell-classifier/joern-parsed/negative")
+    output_dir = join_path("/Users/nguyenbinhminh/MasterUET/Thesis/code-smell-classifier/joern-parsed/positive")
     negative_files = []
     count = 0
-    with open("/Users/nguyenbinhminh/MasterUET/Thesis/code-smell-classifier/eslint-log-negative.txt", "r") as file:
+    with open("/Users/nguyenbinhminh/MasterUET/Thesis/code-smell-classifier/eslint-log-positive.txt", "r") as file:
         for line in file:
             count += 1
             words = line.split(' ')
@@ -62,7 +62,7 @@ def export_joern_graph():
             # Remove special characters from the file name
             # file_name_cleaned = ''.join(char for char in file_name if char.isalnum() or char in string.whitespace)
             negative_files.append(file_name)
-            if count >= 2000:
+            if count >= 1000:
                 break
     for file in negative_files:
         run_joern(re.escape(input_dir + "/" + file), output_dir)
